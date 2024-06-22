@@ -11,6 +11,7 @@ import (
 	server "github.com/irede-interview/cinema-api/cmd/http"
 	"github.com/irede-interview/cinema-api/internal/adapters"
 	"github.com/irede-interview/cinema-api/internal/config"
+	"github.com/irede-interview/cinema-api/internal/handlers/docs"
 	"github.com/irede-interview/cinema-api/internal/handlers/healthy"
 	"github.com/irede-interview/cinema-api/internal/handlers/moviehdl"
 	"github.com/irede-interview/cinema-api/internal/handlers/sessionhdl"
@@ -24,6 +25,7 @@ func main() {
 	app := server.New(apt)
 
 	app.RegisterHandler(
+		docs.NewHandler(apt),
 		healthy.NewHandler(apt),
 		moviehdl.NewHandler(apt),
 		sessionhdl.NewHandler(apt),

@@ -37,11 +37,11 @@ func (s *SessionService) Get(params GetSessionParams) (*domain.Session, error) {
 	).Execute(params)
 }
 
-func (s *SessionService) List() ([]domain.Session, error) {
+func (s *SessionService) List(params ListSessionsParams) ([]domain.Session, error) {
 	return NewListSessionsCommand(
 		s.sessionRepository,
 		s.logger,
-	).Execute()
+	).Execute(params)
 }
 
 func (s *SessionService) Update(params UpdateSessionParams) error {

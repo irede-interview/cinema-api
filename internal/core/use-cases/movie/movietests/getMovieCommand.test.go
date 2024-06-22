@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/irede-interview/cinema-api/internal/core/domain"
 	movieservice "github.com/irede-interview/cinema-api/internal/core/use-cases/movie"
 	"github.com/irede-interview/cinema-api/internal/mocks"
@@ -11,25 +12,24 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestCreateMovieCommand_Execute(t *testing.T) {
+func TestGetMovieCommand_Execute(t *testing.T) {
 	mockRepo := new(mocks.MockMovieRepository)
 	mockLogger := new(mocks.MockLogger)
-	command := movieservice.NewCreateMovieCommand(mockRepo, mockLogger)
+	command := movieservice.NewGetMovieCommand(mockRepo, mockLogger)
 
-	params := movieservice.CreateMovieParams{
+	params := movieservice.GetMovieParams{
+		MovieToken: "12345",
+	}
+
+	expectedMovie := &domain.Movie{
+		Token:    uuid.MustParse("12345"),
 		Name:     "Inception",
 		Director: "Christopher Nolan",
 		Duration: 148,
 	}
 
-	expectedMovie := &domain.Movie{
-		Name:     params.Name,
-		Director: params.Director,
-		Duration: params.Duration,
-	}
-
 	t.Run("Success", func(t *testing.T) {
-		mockRepo.On("Create", mock.AnythingOfType("*domain.Movie")).Return(expectedMovie, nil)
+		mockRepo.On("Get", params.MovieToken).Return(expectedMovie, nil)
 		mockLogger.On("Info", mock.Anything, mock.Anything).Twice()
 
 		result, err := command.Execute(params)
@@ -41,7 +41,7 @@ func TestCreateMovieCommand_Execute(t *testing.T) {
 	})
 
 	t.Run("Failure", func(t *testing.T) {
-		mockRepo.On("Create", mock.AnythingOfType("*domain.Movie")).Return(nil, errors.New("failed to create movie"))
+		mockRepo.On("Get", params.MovieToken).Return(nil, errors.New("failed to retrieve movie"))
 		mockLogger.On("Info", mock.Anything, mock.Anything).Once()
 		mockLogger.On("Error", mock.Anything, mock.Anything).Once()
 
@@ -49,6 +49,7 @@ func TestCreateMovieCommand_Execute(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
+		assert.EqualError(t, err, "error creating movie: failed to retrieve movie")
 		mockRepo.AssertExpectations(t)
 		mockLogger.AssertExpectations(t)
 	})

@@ -1,47 +1,46 @@
-package movietests
+package threatertests
 
 import (
 	"errors"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/irede-interview/cinema-api/internal/core/domain"
-	movieservice "github.com/irede-interview/cinema-api/internal/core/use-cases/movie"
+	threaterservice "github.com/irede-interview/cinema-api/internal/core/use-cases/threater"
 	"github.com/irede-interview/cinema-api/internal/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-func TestCreateMovieCommand_Execute(t *testing.T) {
-	mockRepo := new(mocks.MockMovieRepository)
+func TestGetThreaterCommand_Execute(t *testing.T) {
+	mockRepo := new(mocks.MockThreaterRepository)
 	mockLogger := new(mocks.MockLogger)
-	command := movieservice.NewCreateMovieCommand(mockRepo, mockLogger)
+	command := threaterservice.NewGetThreaterCommand(mockRepo, mockLogger)
 
-	params := movieservice.CreateMovieParams{
-		Name:     "Inception",
-		Director: "Christopher Nolan",
-		Duration: 148,
+	params := threaterservice.GetThreaterParams{
+		ThreaterToken: "12345",
 	}
 
-	expectedMovie := &domain.Movie{
-		Name:     params.Name,
-		Director: params.Director,
-		Duration: params.Duration,
+	expectedThreater := &domain.Threater{
+		Token:       uuid.MustParse(params.ThreaterToken),
+		Number:      1,
+		Description: "A large threater with many seats",
 	}
 
 	t.Run("Success", func(t *testing.T) {
-		mockRepo.On("Create", mock.AnythingOfType("*domain.Movie")).Return(expectedMovie, nil)
+		mockRepo.On("Get", params.ThreaterToken).Return(expectedThreater, nil)
 		mockLogger.On("Info", mock.Anything, mock.Anything).Twice()
 
 		result, err := command.Execute(params)
 
 		assert.NoError(t, err)
-		assert.Equal(t, expectedMovie, result)
+		assert.Equal(t, expectedThreater, result)
 		mockRepo.AssertExpectations(t)
 		mockLogger.AssertExpectations(t)
 	})
 
 	t.Run("Failure", func(t *testing.T) {
-		mockRepo.On("Create", mock.AnythingOfType("*domain.Movie")).Return(nil, errors.New("failed to create movie"))
+		mockRepo.On("Get", params.ThreaterToken).Return(nil, errors.New("database error"))
 		mockLogger.On("Info", mock.Anything, mock.Anything).Once()
 		mockLogger.On("Error", mock.Anything, mock.Anything).Once()
 
@@ -49,6 +48,7 @@ func TestCreateMovieCommand_Execute(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
+		assert.EqualError(t, err, "error creating threater: database error")
 		mockRepo.AssertExpectations(t)
 		mockLogger.AssertExpectations(t)
 	})

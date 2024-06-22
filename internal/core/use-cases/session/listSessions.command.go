@@ -13,6 +13,10 @@ type ListSessionsCommand struct {
 	logger            logger.Provider
 }
 
+type ListSessionsParams struct {
+	Page int
+}
+
 func NewListSessionsCommand(SessionRepo ports.SessionRepository, logger logger.Provider) *ListSessionsCommand {
 	return &ListSessionsCommand{
 		sessionRepository: SessionRepo,
@@ -20,10 +24,10 @@ func NewListSessionsCommand(SessionRepo ports.SessionRepository, logger logger.P
 	}
 }
 
-func (cmd *ListSessionsCommand) Execute() ([]domain.Session, error) {
+func (cmd *ListSessionsCommand) Execute(params ListSessionsParams) ([]domain.Session, error) {
 	cmd.logger.Info("ListSessionsCommand initiated")
 
-	sessions, err := cmd.sessionRepository.List()
+	sessions, err := cmd.sessionRepository.List(params.Page)
 	if err != nil {
 		cmd.logger.Error("ListSessionsCommand initiated", err)
 		return nil, fmt.Errorf("error creating Session: %w", err)

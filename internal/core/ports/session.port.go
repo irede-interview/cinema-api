@@ -7,7 +7,7 @@ import (
 type SessionRepository interface {
 	Create(session *domain.Session) (*domain.Session, error)
 	Get(sessionToken string) (*domain.Session, error)
-	List() ([]domain.Session, error)
+	List(page int) ([]domain.Session, error)
 	Update(sessionToUpdate *domain.Session) error
 	Inactivate(movieToken string) error
 }

@@ -51,18 +51,31 @@ func (r *SessionRepository) Create(session *domain.Session) (*domain.Session, er
 	return session, nil
 }
 
-func (r *SessionRepository) List() ([]domain.Session, error) {
-	tx, err := r.db.Begin()
+func (r *SessionRepository) List(page int) ([]domain.Session, error) {
+	if page < 1 {
+		page = 1
+	}
+	pageSize := 6
+	offset := (page - 1) * pageSize
+
+	var sessions []domain.Session
+	tx, err := r.db.NewSession(nil).Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.RollbackUnlessCommitted()
+
+	_, err = tx.Select("*").
+		From("sessions").
+		OrderBy("session_datetime DESC").
+		Limit(uint64(pageSize)).
+		Offset(uint64(offset)).
+		Load(&sessions)
 	if err != nil {
 		return nil, err
 	}
 
-	var sessions []domain.Session
-	_, err = tx.
-		Select("*").
-		From("sessions").
-		Load(&sessions)
-	if err != nil {
+	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
 
