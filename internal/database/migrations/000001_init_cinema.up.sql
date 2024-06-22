@@ -1,0 +1,28 @@
+CREATE TABLE theaters (
+  token UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  number INT NOT NULL,
+  description TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE movies (
+  token UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  director TEXT NOT NULL,
+  duration INT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE sessions (
+  token UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  movie_token UUID NOT NULL,
+  thread_token UUID NOT NULL,
+  session_datetime DATETIME NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (movie_token) REFERENCES movies(token),
+  FOREIGN KEY (thread_token) REFERENCES theaters(token)
+);
+

@@ -1,0 +1,43 @@
+version: "3.8"
+services:
+  docker_cinema_api:
+    container_name: docker_cinema_api
+    cap_add: 
+      - SYS_PTRACE
+    security_opt:
+      - "apparmor=unconfined"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - 8080:8080
+      - 40000:40000
+    volumes:
+      - ./cmd:/app/cmd
+      - ./internal:/app/internal
+      - ./pkg:/app/pkg
+      - ./main.go:/app/main.go
+    networks:
+      - docker_cinemas_api
+    depends_on:
+      - cinema-db
+
+  cinema-db:
+    container_name: docker_cinema_db
+    image: 'postgres:16.0'
+    restart: always
+    ports:
+      - 5432:5432
+    networks:
+      - docker_cinemas_api
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=cinema_api
+    volumes:
+      - ./db/cinema-db:/var/lib/postgresql/data
+networks:
+  docker_cinemas_api:
+    driver: bridge
